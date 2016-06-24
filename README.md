@@ -13,5 +13,5 @@ S.A.V.E. é um sistema autônomo para evitar acidentes envolvendo crianças em c
 	* schematics: Versões em PDF do esquemáticos e layouts da PCB para impressão
 
 ## Contato
-	* Raphael Lima: raphael.aolima8 at gmail dot com 
+* Raphael Lima: raphael.aolima8 at gmail dot com 
 
