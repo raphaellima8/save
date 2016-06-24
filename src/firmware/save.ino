@@ -1,6 +1,6 @@
-  /*
+/*
  * Copyright (C) 2015 Raphael Lima
- * S.A.V.E - It is a software that manages the hardware that make up an entire autonomic system.
+ * S.A.V.E - Autonomous System for Parked Vehicles
  *
  * This file is part of S.A.V.E.
  *
