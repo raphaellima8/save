@@ -180,13 +180,13 @@ int getDistance(int trigger, int echo){
        Serial.print(" | ");
     }
     Serial.println();
-    Serial.print("Variancia ");
+    Serial.print("Variance ");
     Serial.println(variance/30);
     return variance/30;
   }
 
   double standardDeviation(double variance){
-    Serial.print("Desvio Padrao ");
+    Serial.print("Standard Deviation ");
     Serial.println(sqrt(variance));
     return sqrt(variance);
   }
@@ -194,7 +194,7 @@ int getDistance(int trigger, int echo){
   void confidenceInterval(int dists[]){
     int average = refineDistanceValues(dists, 30);
     Serial.println("==================================================================================================");
-    Serial.print("MEDIA TOTAL: " );
+    Serial.print("Total Average: " );
     Serial.println(average);
     double variance = calculateVariance(dists, average);
     double deviation = standardDeviation(variance);
@@ -224,9 +224,9 @@ int getDistance(int trigger, int echo){
               delay(3000);
             }
             confidenceInterval(filtratedDistance);
-            Serial.print("Limite inferior: ");
+            Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
-            Serial.print("Limite superior: ");
+            Serial.print("Upper Limit: ");
             Serial.println(confidenceInterval[1]);
             initialDistanceFront = confidenceInterval[0];
             for(int i = 0; i < 30; i++){
@@ -234,9 +234,9 @@ int getDistance(int trigger, int echo){
               delay(3000);
             }
             confidenceInterval(filtratedDistance);
-            Serial.print("Limite inferior: ");
+            Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
-            Serial.print("Limite superior: ");
+            Serial.print("Upper Limit: ");
             Serial.println(confidenceInterval[1]);
             initialDistanceBack = confidenceInterval[0];
             cicle = false;
@@ -251,9 +251,9 @@ int getDistance(int trigger, int echo){
               delay(3000);
             }
             confidenceInterval(filtratedDistance);
-            Serial.print("Limite inferior: ");
+            Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
-            Serial.print("Limite superior: ");
+            Serial.print("Upper Limit: ");
             Serial.println(confidenceInterval[1]);
             finalDistanceFront = confidenceInterval[0];
             for(int i = 0; i < 30; i++){
@@ -261,9 +261,9 @@ int getDistance(int trigger, int echo){
               delay(3000);
             }
             confidenceInterval(filtratedDistance);
-            Serial.print("Limite inferior: ");
+            Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
-            Serial.print("Limite superior: ");
+            Serial.print("Upper Limit: ");
             Serial.println(confidenceInterval[1]);
             finalDistanceBack = confidenceInterval[0];
             if(finalDistanceFront > distanciaInicialFrontal && finalDistanceBack <= initialDistanceBack){
