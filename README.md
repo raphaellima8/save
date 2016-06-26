@@ -1,7 +1,7 @@
-# S.A.V.E. – Um sistema FLOSS autônomo para evitar acidentes envolvendo crianças em carros estacionados
+# SAVE – Um sistema FLOSS autônomo para evitar acidentes envolvendo crianças em carros estacionados
 
 ## Sobre
-S.A.V.E. é um sistema autônomo para evitar acidentes envolvendo crianças em carros estacionados.
+SAVE é um sistema autônomo para evitar acidentes envolvendo crianças em carros estacionados.
 
 ## Organização dos diretórios
 1. src: Código fonte do firmware e esquemáticos do sistema
@@ -13,5 +13,4 @@ S.A.V.E. é um sistema autônomo para evitar acidentes envolvendo crianças em c
 	* schematics: Versões em PDF do esquemáticos e layouts da PCB para impressão
 
 ## Contato
-* Raphael Lima: raphael.aolima8 at gmail dot com 
-
+* Raphael Lima: raphael.aolima8 at gmail dot com

@@ -18,6 +18,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+ /*
+  Project: SAVE - Autonomous System for Parked Vehicles
+  @author Raphael Lima
+  @version 0.1
+ */
+
   #define echoPinFront 13
   #define triggerPinFront 12
   #define echoPinBack 11
@@ -41,6 +47,19 @@
   double confidenceInterval[2];
   int filtratedDistance[30];
 
+  int bin2int(int numValues, ...);
+  int powint(int base, int exponent);
+  void carStatus(int action);
+  void activateActuators(boolean atdr);
+  void shutdown();
+  int refineDistanceValues(int distance[], int size);
+  int getDistance(int trigger, int echo);
+  double calculateVariance(int distancesAverages[], int average);
+  double standardDeviation(double variance);
+  void getConfidenceInterval(int dists[]);
+  int calculateAverage(int dist[]);
+  int toMeasureDistance(int trigger, int echo);
+
   void setup()
   {
     Serial.begin (9600);
@@ -55,9 +74,14 @@
     pinMode(dip_1, INPUT_PULLUP);
     pinMode(dip_2, INPUT_PULLUP);
   }
-
-  int bin2int(int numValues, ...)
-  { //Primeiro parâmetro e a quantidade de pinos que serão lidos, os "n" seguintes são os pinos a serem lidos
+/*
+  Read the DIP switch configuration and convert the result to binary
+  @param amount of pins that will be read
+  @param pins that will be read
+  @return the numerical value of the color code.
+*/
+  int bin2int ( int numValues, ... )
+  {
     int total = 0;
     va_list values;
     va_start(values, numValues);
@@ -78,45 +102,56 @@
     return result;
   }
 
+  /*
+    Indicates if the car is on or off.
+    Case @param equal 0, vehicle is Off, but if @param equal 1, vehicle is on
+    @param int 0 or 1 condition that will indicate if vehicle is on or off
+  */
   void carStatus(int action)
   {
     switch(action){
       case 0:
         digitalWrite(ledOn, LOW);
         digitalWrite(ledOff, HIGH);
-        break;
+      break;
 
-        case 1:
-          digitalWrite(ledOn, HIGH);
-          digitalWrite(ledOff, LOW);
-          break;
+      case 1:
+        digitalWrite(ledOn, HIGH);
+        digitalWrite(ledOff, LOW);
+      break;
     }
   }
 
+  /*
+  Activates the actuators as the buzzer and LED's. Only stop when @param atdr is
+  false and DIP switch is at low logic level.
+  @param boolean adtr
+  */
   void activateActuators(boolean atdr)
   {
     digitalWrite(ledWindow, HIGH);
     delay(6000);
     digitalWrite(ledWindow, LOW);
-      while(atdr) {
-        tone(buzzer, 1500);
-        delay(300);
-        noTone(buzzer);
-        digitalWrite(ledOff, LOW);
-        delay(600);
-        digitalWrite(ledOff, HIGH);
+    while(atdr) {
+      tone(buzzer, 1500);
+      delay(300);
+      noTone(buzzer);
+      digitalWrite(ledOff, LOW);
+      delay(600);
+      digitalWrite(ledOff, HIGH);
 
-        state = bin2int(2, dip_1,dip_2);
+      state = bin2int(2, dip_1,dip_2);
 
-        if(state == B010){
-          atdr = false;
-          cicle = true;
-        }
+      if(state == B010){
+        atdr = false;
+        cicle = true;
       }
+    }
   }
 
-
-
+  /*
+  Turn off the system and reset the values of the variables
+  */
   void shutdown()
   {
     distance = 0;
@@ -129,38 +164,30 @@
 
   int refineDistanceValues(int distance[], int size)
   {
-        int index = 0;
-        int average = 0;
-        int sum = 0;
-        int i = 0;
+        int index = 0, average = 0, sum = 0, i = 0;
 
         if(size == 10){
-
            while(index < 5){
-               distance[index]  =  (distance[i] + distance[i+1]) / 2;
-               index++;
+            distance[index]  =  (distance[i] + distance[i+1]) / 2;
+            index++;
            }
-
            for(int j = 0; j < 5; j++){
-             sum = sum + distance[j];
+            sum = sum + distance[j];
            }
-
            average = sum / 5;
            return average;
-
-        }
-        else
-        {
-          while(index < 10){
-            distance[index]  =  (distance[i] + distance[i+1] + distance[i+2]) / 3;
-            index++;
-            i = i+3;
-          }
-             refineDistanceValues(distance, 10);
+        } else {
+            while(index < 10){
+              distance[index]  =  (distance[i] + distance[i+1] + distance[i+2]) / 3;
+              index++;
+              i = i+3;
+            }
+            refineDistanceValues(distance, 10);
         }
   }
 
-int getDistance(int trigger, int echo){
+  int getDistance(int trigger, int echo)
+  {
     for(int i = 0; i < 30; i++){
         distances[i] = toMeasureDistance(trigger, echo);
         Serial.print(distances[i]);
@@ -172,7 +199,8 @@ int getDistance(int trigger, int echo){
     return averages;
   }
 
-  double calculateVariance(int distancesAverages[], int average){
+  double calculateVariance(int distancesAverages[], int average)
+  {
     double variance = 0;
     for(int i = 0; i < 30; i++){
        variance = variance + pow((distancesAverages[i] - average), 2);
@@ -185,15 +213,17 @@ int getDistance(int trigger, int echo){
     return variance/30;
   }
 
-  double standardDeviation(double variance){
+  double standardDeviation(double variance)
+  {
     Serial.print("Standard Deviation ");
     Serial.println(sqrt(variance));
     return sqrt(variance);
   }
 
-  void confidenceInterval(int dists[]){
+  void getConfidenceInterval(int dists[])
+  {
     int average = refineDistanceValues(dists, 30);
-    Serial.println("==================================================================================================");
+    Serial.println("==========================================================");
     Serial.print("Total Average: " );
     Serial.println(average);
     double variance = calculateVariance(dists, average);
@@ -203,7 +233,8 @@ int getDistance(int trigger, int echo){
     confidenceInterval[1] = (average + confidenceLevel) * (variance / deviation);
   }
 
-  int calculateAverage(int dist[]){
+  int calculateAverage(int dist[])
+  {
     int sum = 0;
     for(int i = 0; i < 30; i++){
         sum = sum + dist[i];
@@ -223,7 +254,7 @@ int getDistance(int trigger, int echo){
               filtratedDistance[i] = getDistance(triggerPinFront, echoPinFront);
               delay(3000);
             }
-            confidenceInterval(filtratedDistance);
+            getConfidenceInterval(filtratedDistance);
             Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
             Serial.print("Upper Limit: ");
@@ -233,7 +264,7 @@ int getDistance(int trigger, int echo){
               filtratedDistance[i] = getDistance(triggerPinBack, echoPinBack);
               delay(3000);
             }
-            confidenceInterval(filtratedDistance);
+            getConfidenceInterval(filtratedDistance);
             Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
             Serial.print("Upper Limit: ");
@@ -250,7 +281,7 @@ int getDistance(int trigger, int echo){
               filtratedDistance[i] = getDistance(triggerPinFront, echoPinFront);
               delay(3000);
             }
-            confidenceInterval(filtratedDistance);
+            getConfidenceInterval(filtratedDistance);
             Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
             Serial.print("Upper Limit: ");
@@ -260,13 +291,13 @@ int getDistance(int trigger, int echo){
               filtratedDistance[i] = getDistance(triggerPinBack, echoPinBack);
               delay(3000);
             }
-            confidenceInterval(filtratedDistance);
+            getConfidenceInterval(filtratedDistance);
             Serial.print("Inferior Limit: ");
             Serial.println(confidenceInterval[0]);
             Serial.print("Upper Limit: ");
             Serial.println(confidenceInterval[1]);
             finalDistanceBack = confidenceInterval[0];
-            if(finalDistanceFront > distanciaInicialFrontal && finalDistanceBack <= initialDistanceBack){
+            if(finalDistanceFront > initialDistanceFront && finalDistanceBack <= initialDistanceBack){
                 activateActuators(true);
             }
       break;
