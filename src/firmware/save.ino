@@ -34,11 +34,12 @@
   #define ledOff 6
   #define ledWindow 5
   #define buzzer 4
+  const int weightPin = A0;
 
   int distance = 0;
   int state = 0;
   int distances[30];
-  double confidenceLevel = 1.96;
+  const double CONFIDENCE_LEVEL = 1.96;
   double initialDistanceFront = 0;
   double initialDistanceBack = 0;
   double finalDistanceFront = 0;
@@ -46,6 +47,7 @@
   boolean cicle = true;
   double confidenceInterval[2];
   int filtratedDistance[30];
+  int weight = 0;
 
   int bin2int(int numValues, ...);
   int powint(int base, int exponent);
@@ -59,6 +61,7 @@
   void getConfidenceInterval(int dists[]);
   int calculateAverage(int dist[]);
   int toMeasureDistance(int trigger, int echo);
+  int getWeight();
 
   void setup()
   {
@@ -162,6 +165,11 @@
     cicle = true;
   }
 
+  int getWeight()
+  {
+      return analogRead(weightPin);
+  }
+
   int refineDistanceValues(int distance[], int size)
   {
         int index = 0, average = 0, sum = 0, i = 0;
@@ -229,8 +237,8 @@
     double variance = calculateVariance(dists, average);
     double deviation = standardDeviation(variance);
 
-    confidenceInterval[0] = (average - confidenceLevel) * (variance / deviation);
-    confidenceInterval[1] = (average + confidenceLevel) * (variance / deviation);
+    confidenceInterval[0] = (average - CONFIDENCE_LEVEL) * (variance / deviation);
+    confidenceInterval[1] = (average + CONFIDENCE_LEVEL) * (variance / deviation);
   }
 
   int calculateAverage(int dist[])
@@ -270,6 +278,7 @@
             Serial.print("Upper Limit: ");
             Serial.println(confidenceInterval[1]);
             initialDistanceBack = confidenceInterval[0];
+            weight = getWeight();
             cicle = false;
           }
       break;
@@ -297,8 +306,13 @@
             Serial.print("Upper Limit: ");
             Serial.println(confidenceInterval[1]);
             finalDistanceBack = confidenceInterval[0];
-            if(finalDistanceFront > initialDistanceFront && finalDistanceBack <= initialDistanceBack){
+            weight = getWeight();
+            if(finalDistanceFront > initialDistanceFront && finalDistanceBack <= initialDistanceBack && weight > 0){
                 activateActuators(true);
+            } else if (finalDistanceFront > initialDistanceFront && finalDistanceBack > initialDistanceBack && weight > 0){
+                activateActuators(true);
+            } else {
+                shutdown();
             }
       break;
 
