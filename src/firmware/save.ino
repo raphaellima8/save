@@ -309,7 +309,7 @@
             weight = getWeight();
             if(finalDistanceFront > initialDistanceFront && finalDistanceBack <= initialDistanceBack && weight > 0){
                 activateActuators(true);
-            } else if (finalDistanceFront > initialDistanceFront && finalDistanceBack > initialDistanceBack && weight > 0){
+            } else if (finalDistanceFront > initialDistanceFront && finalDistanceBack >= initialDistanceBack && weight > 0){
                 activateActuators(true);
             } else {
                 shutdown();
